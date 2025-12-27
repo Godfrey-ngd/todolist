@@ -45,13 +45,17 @@ private fun updateTimePartKeepingDate(currentMillis: Long, hour: Int, minute: In
 @Composable
 fun AddEditScreen(
     viewModel: TodoViewModel,
+    todoId: Int? = null,
     onBack: () -> Unit
 ) {
+    val isEditMode = todoId != null && todoId >= 0
+
     // 状态管理
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(0) } // 0:低, 1:中, 2:高
     var selectedDate by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var originalTodo by remember { mutableStateOf<com.example.todolist.data.local.TodoEntity?>(null) }
 
     // 日期选择器对话框状态
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDate)
@@ -65,10 +69,28 @@ fun AddEditScreen(
     )
     var showTimePicker by remember { mutableStateOf(false) }
 
+    LaunchedEffect(todoId) {
+        if (isEditMode) {
+            val loaded = viewModel.getTodoById(todoId!!)
+            if (loaded != null) {
+                originalTodo = loaded
+                title = loaded.title
+                description = loaded.description
+                priority = loaded.priority
+                selectedDate = loaded.dueDate
+
+                datePickerState.selectedDateMillis = loaded.dueDate
+                val cal = Calendar.getInstance().apply { timeInMillis = loaded.dueDate }
+                timePickerState.hour = cal.get(Calendar.HOUR_OF_DAY)
+                timePickerState.minute = cal.get(Calendar.MINUTE)
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("添加新任务") },
+                title = { Text(if (isEditMode) "编辑任务" else "添加新任务") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "返回")
@@ -138,13 +160,27 @@ fun AddEditScreen(
             Button(
                 onClick = {
                     if (title.isNotBlank()) {
-                        viewModel.addTodo(title, description, selectedDate, priority)
+                        if (isEditMode) {
+                            val base = originalTodo
+                            if (base != null) {
+                                viewModel.updateTodo(
+                                    base.copy(
+                                        title = title,
+                                        description = description,
+                                        dueDate = selectedDate,
+                                        priority = priority
+                                    )
+                                )
+                            }
+                        } else {
+                            viewModel.addTodo(title, description, selectedDate, priority)
+                        }
                         onBack() // 保存后返回主页
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("保存任务")
+                Text(if (isEditMode) "保存修改" else "保存任务")
             }
         }
     }

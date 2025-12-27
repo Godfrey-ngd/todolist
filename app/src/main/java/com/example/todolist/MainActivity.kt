@@ -1,7 +1,6 @@
 package com.example.todolist
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -61,11 +60,24 @@ fun TodoAppNavigation(viewModel: TodoViewModel) {
         composable(Screen.Add.route) {
             AddEditScreen(
                 viewModel = viewModel,
-                onBack = {navController.popBackStack() }
+                onBack = { navController.popBackStack() }
             )
         }
 
-        // 3. 详情页路由
+        // 3. 编辑页路由
+        composable(
+            route = Screen.Edit.route,
+            arguments = listOf(navArgument("todoId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val todoId = backStackEntry.arguments?.getInt("todoId") ?: -1
+            AddEditScreen(
+                viewModel = viewModel,
+                todoId = todoId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // 4. 详情页路由
         composable(
             route = Screen.Detail.route,
             arguments = listOf(navArgument("todoId") { type = NavType.IntType })
@@ -74,7 +86,8 @@ fun TodoAppNavigation(viewModel: TodoViewModel) {
             DetailScreen(
                 todoId = todoId,
                 viewModel = viewModel,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onEdit = { id -> navController.navigate(Screen.Edit.createRoute(id)) }
             )
         }
     }

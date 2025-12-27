@@ -62,6 +62,10 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         repository.update(todo.copy(isCompleted = !todo.isCompleted))
     }
 
+    fun updateTodo(todo: TodoEntity) = viewModelScope.launch {
+        repository.update(todo)
+    }
+
     fun deleteTodo(todo: TodoEntity) = viewModelScope.launch {
         repository.delete(todo)
     }
