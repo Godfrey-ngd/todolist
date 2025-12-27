@@ -16,6 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.todolist.data.local.TodoEntity
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+
+private fun formatMillisToDateTime(millis: Long): String {
+    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    return formatter.format(Date(millis))
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,13 +112,12 @@ fun EnhancedTodoItem(
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1
                 )
-                if (todo.description.isNotBlank()) {
-                    Text(
-                        text = todo.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 1
-                    )
-                }
+                Text(
+                    text = formatMillisToDateTime(todo.dueDate),
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1
+                )
+
             }
 
             IconButton(onClick = onDelete) {

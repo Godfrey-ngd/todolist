@@ -1,6 +1,7 @@
 package com.example.todolist
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -60,7 +61,7 @@ fun TodoAppNavigation(viewModel: TodoViewModel) {
         composable(Screen.Add.route) {
             AddEditScreen(
                 viewModel = viewModel,
-                onBack = { navController.popBackStack() }
+                onBack = {navController.popBackStack() }
             )
         }
 
