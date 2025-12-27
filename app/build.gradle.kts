@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.todolist"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.todolist"
@@ -53,6 +53,8 @@ dependencies {
     // Room (Compose 项目建议配合 Room-KTX 使用以支持协程)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation.common.android)
     ksp(libs.room.compiler) //
 
     // ViewModel 针对 Compose 的优化库
