@@ -14,7 +14,7 @@ interface TodoDao {
 
     // 插入新任务
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTodo(todo: TodoEntity)
+    suspend fun insertTodo(todo: TodoEntity): Long
 
     // 更新任务（例如标记完成）
     @Update

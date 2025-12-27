@@ -5,10 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todolist.data.TodoRepository
 import com.example.todolist.data.local.TodoEntity
+import com.example.todolist.reminder.TodoReminderScheduler
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
+class TodoViewModel(
+    private val repository: TodoRepository,
+    private val reminderScheduler: TodoReminderScheduler
+) : ViewModel() {
 
     // 1. 用户当前的筛选条件状态（默认显示全部）
     private val _currentFilter = MutableStateFlow(TodoFilter.ALL)
@@ -44,30 +48,62 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         }
     }
 
-    // 5. 增强版添加函数
-    fun addTodo(title: String, description: String, dueDate: Long, priority: Int) {
+    // 5. 添加函数（支持提醒）
+    fun addTodo(
+        title: String,
+        description: String,
+        dueDate: Long,
+        priority: Int,
+        reminderEnabled: Boolean,
+        reminderAt: Long,
+        repeatIntervalDays: Int
+    ) {
         viewModelScope.launch {
-            repository.insert(
-                TodoEntity(
-                    title = title,
-                    description = description,
-                    dueDate = dueDate,
-                    priority = priority
-                )
+            val newTodo = TodoEntity(
+                title = title,
+                description = description,
+                dueDate = dueDate,
+                priority = priority,
+                reminderEnabled = reminderEnabled,
+                reminderAt = reminderAt,
+                repeatIntervalDays = repeatIntervalDays
             )
+
+            val newId = repository.insert(newTodo).toInt()
+            if (reminderEnabled) {
+                reminderScheduler.schedule(
+                    todoId = newId,
+                    reminderAtMillis = reminderAt,
+                    repeatIntervalDays = repeatIntervalDays
+                )
+            }
         }
     }
 
     fun toggleTodo(todo: TodoEntity) = viewModelScope.launch {
-        repository.update(todo.copy(isCompleted = !todo.isCompleted))
+        val updated = todo.copy(isCompleted = !todo.isCompleted)
+        repository.update(updated)
+        if (updated.isCompleted) {
+            reminderScheduler.cancel(updated.id)
+        }
     }
 
     fun updateTodo(todo: TodoEntity) = viewModelScope.launch {
         repository.update(todo)
+        if (todo.reminderEnabled) {
+            reminderScheduler.schedule(
+                todoId = todo.id,
+                reminderAtMillis = todo.reminderAt,
+                repeatIntervalDays = todo.repeatIntervalDays
+            )
+        } else {
+            reminderScheduler.cancel(todo.id)
+        }
     }
 
     fun deleteTodo(todo: TodoEntity) = viewModelScope.launch {
         repository.delete(todo)
+        reminderScheduler.cancel(todo.id)
     }
 
     suspend fun getTodoById(todoId: Int): TodoEntity? {

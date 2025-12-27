@@ -12,7 +12,7 @@ class TodoRepository(private val todoDao: TodoDao) {
         return todoDao.getTodoById(id)
     }
 
-    suspend fun insert(todo: TodoEntity) = todoDao.insertTodo(todo)
+    suspend fun insert(todo: TodoEntity): Long = todoDao.insertTodo(todo)
 
     suspend fun update(todo: TodoEntity) = todoDao.updateTodo(todo)
 

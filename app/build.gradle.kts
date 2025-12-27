@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.navigation.common.android)
+    implementation(libs.androidx.work.runtime.ktx)
     ksp(libs.room.compiler) //
 
     // ViewModel 针对 Compose 的优化库

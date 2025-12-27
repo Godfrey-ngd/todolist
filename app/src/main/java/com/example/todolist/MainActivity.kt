@@ -1,9 +1,12 @@
 package com.example.todolist
 
+import android.Manifest
 import android.os.Bundle
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -21,11 +24,21 @@ import com.example.todolist.ui.theme.TodolistTheme
 
 
 class MainActivity : ComponentActivity() {
+
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val repository = (application as TodoApplication).repository
-        val viewModel: TodoViewModel by viewModels { TodoViewModelFactory(repository) }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        val app = application as TodoApplication
+        val viewModel: TodoViewModel by viewModels {
+            TodoViewModelFactory(app.repository, app.reminderScheduler)
+        }
 
         setContent {
             TodolistTheme {
