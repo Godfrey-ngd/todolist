@@ -10,7 +10,7 @@ interface TodoDao {
 
     //根据ID获取待办事项详情
     @Query("SELECT * FROM todo_table WHERE id = :id")
-    fun getTodoById(id: Int): TodoEntity?
+    suspend fun getTodoById(id: Int): TodoEntity?
 
     // 插入新任务
     @Insert(onConflict = OnConflictStrategy.REPLACE)
