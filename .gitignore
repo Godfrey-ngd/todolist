@@ -1,0 +1,46 @@
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Local configuration
+local.properties
+/local.properties
+
+# IntelliJ / Android Studio
+*.iml
+/.idea
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/.idea/httpRequests
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Android build outputs
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+*.keystore
+*.jks
+*.hprof
+
+# NDK / external build
+.externalNativeBuild
+.cxx
+
+# Logs and captures
+*.log
+/captures
+
+# Patch / backup files
+*.orig
+*.rej
+*.bak
