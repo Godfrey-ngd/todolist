@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.todolist.data.local.TodoEntity
 import java.text.SimpleDateFormat
@@ -38,6 +39,7 @@ fun TodoScreen(
     val currentFilter by viewModel.currentFilter.collectAsState()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
         topBar = {
             TopAppBar(title = { Text("我的记事本") })
         },
@@ -47,7 +49,12 @@ fun TodoScreen(
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(padding)
+        ) {
             // 1. 筛选选项卡 (Tabs)
             ScrollableTabRow(
                 selectedTabIndex = TodoFilter.entries.indexOf(currentFilter),
@@ -87,11 +94,25 @@ fun EnhancedTodoItem(
     onCheckedChange: (Boolean) -> Unit,
     onDelete: () -> Unit
 ) {
+    val cardContainerColor = if (todo.isCompleted) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
+    val titleStyle = if (todo.isCompleted) {
+        MaterialTheme.typography.bodyLarge.copy(textDecoration = TextDecoration.LineThrough)
+    } else {
+        MaterialTheme.typography.bodyLarge
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable { onClick() } // 点击进入详情
+        ,
+        colors = CardDefaults.cardColors(containerColor = cardContainerColor)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -109,7 +130,7 @@ fun EnhancedTodoItem(
             Column(modifier = Modifier.weight(1f).padding(horizontal = 8.dp)) {
                 Text(
                     text = todo.title,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = titleStyle,
                     maxLines = 1
                 )
                 Text(
@@ -121,7 +142,11 @@ fun EnhancedTodoItem(
             }
 
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "删除", tint = Color.Gray)
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "删除",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
