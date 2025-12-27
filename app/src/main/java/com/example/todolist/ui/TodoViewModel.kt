@@ -1,6 +1,5 @@
 package com.example.todolist.ui
 
-import TodoFilter
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,7 +18,6 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     // 我们将数据库的原始流 (repository.allTodos) 与 筛选条件流 (_currentFilter) 结合
     val filteredTodos: StateFlow<List<TodoEntity>> = repository.allTodos
         .combine(_currentFilter) { todos, filter ->
-            val now = System.currentTimeMillis()
             val startOfToday = TimeUtils.getStartOfToday()
 
             when (filter) {
@@ -66,5 +64,9 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
 
     fun deleteTodo(todo: TodoEntity) = viewModelScope.launch {
         repository.delete(todo)
+    }
+
+    suspend fun getTodoById(todoId: Int): TodoEntity? {
+        return repository.getTodoById(todoId)
     }
 }
