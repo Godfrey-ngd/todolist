@@ -9,7 +9,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.*
+
+
+private fun formatMillis(millis: Long, pattern: String): String {
+    return SimpleDateFormat(pattern, Locale.getDefault()).format(Date(millis))
+}
+
+private fun updateDatePartKeepingTime(currentMillis: Long, newDateMillis: Long): Long {
+    val current = Calendar.getInstance().apply { timeInMillis = currentMillis }
+    val newDate = Calendar.getInstance().apply { timeInMillis = newDateMillis }
+    return Calendar.getInstance().apply {
+        set(Calendar.YEAR, newDate.get(Calendar.YEAR))
+        set(Calendar.MONTH, newDate.get(Calendar.MONTH))
+        set(Calendar.DAY_OF_MONTH, newDate.get(Calendar.DAY_OF_MONTH))
+        set(Calendar.HOUR_OF_DAY, current.get(Calendar.HOUR_OF_DAY))
+        set(Calendar.MINUTE, current.get(Calendar.MINUTE))
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
+
+private fun updateTimePartKeepingDate(currentMillis: Long, hour: Int, minute: Int): Long {
+    return Calendar.getInstance().apply {
+        timeInMillis = currentMillis
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minute)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +56,14 @@ fun AddEditScreen(
     // 日期选择器对话框状态
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDate)
     var showDatePicker by remember { mutableStateOf(false) }
+
+    // 时间选择器对话框状态
+    val timePickerState = rememberTimePickerState(
+        initialHour = Calendar.getInstance().apply { timeInMillis = selectedDate }.get(Calendar.HOUR_OF_DAY),
+        initialMinute = Calendar.getInstance().apply { timeInMillis = selectedDate }.get(Calendar.MINUTE),
+        is24Hour = true
+    )
+    var showTimePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -77,12 +115,21 @@ fun AddEditScreen(
             }
 
             // 4. 日期选择
-            val dateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(selectedDate))
+            val dateString = formatMillis(selectedDate, "yyyy-MM-dd")
+            val timeString = formatMillis(selectedDate, "HH:mm")
+
             OutlinedButton(
                 onClick = { showDatePicker = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("提醒日期: $dateString")
+            }
+
+            OutlinedButton(
+                onClick = { showTimePicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("提醒时间: $timeString")
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -108,12 +155,38 @@ fun AddEditScreen(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    selectedDate = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                    val pickedDateMillis = datePickerState.selectedDateMillis
+                    if (pickedDateMillis != null) {
+                        selectedDate = updateDatePartKeepingTime(selectedDate, pickedDateMillis)
+                    }
                     showDatePicker = false
                 }) { Text("确定") }
             }
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        selectedDate = updateTimePartKeepingDate(
+                            currentMillis = selectedDate,
+                            hour = timePickerState.hour,
+                            minute = timePickerState.minute
+                        )
+                        showTimePicker = false
+                    }
+                ) { Text("确定") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("取消") }
+            },
+            title = { Text("选择时间") },
+            text = { TimePicker(state = timePickerState) }
+        )
     }
 }

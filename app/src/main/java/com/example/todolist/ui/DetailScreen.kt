@@ -82,7 +82,7 @@ fun DetailScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.Gray)
                     Spacer(Modifier.width(8.dp))
-                    val dateStr = SimpleDateFormat("yyyy年MM月dd日", Locale.getDefault()).format(Date(item.dueDate))
+                    val dateStr = SimpleDateFormat("yyyy年MM月dd日 HH:mm", Locale.getDefault()).format(Date(item.dueDate))
                     Text(text = "截止日期: $dateStr", style = MaterialTheme.typography.bodyMedium)
                 }
 
