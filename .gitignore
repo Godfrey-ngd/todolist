@@ -2,6 +2,7 @@
 .gradle/
 build/
 */build/
+/app/build/
 
 # Local configuration
 local.properties
@@ -18,6 +19,10 @@ local.properties
 /.idea/assetWizardSettings.xml
 /.idea/httpRequests
 
+# Kotlin/Native
+.kotlinc
+.kotlin
+
 # OS artifacts
 .DS_Store
 Thumbs.db
@@ -31,6 +36,7 @@ Thumbs.db
 *.keystore
 *.jks
 *.hprof
+*.lock
 
 # NDK / external build
 .externalNativeBuild
@@ -39,8 +45,18 @@ Thumbs.db
 # Logs and captures
 *.log
 /captures
+*.mp4
+*.webm
 
 # Patch / backup files
 *.orig
 *.rej
 *.bak
+*.swp
+
+# Misc
+/.gradle
+.env
+*.local
+coverage/
+.ktlint-cache

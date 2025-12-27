@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import com.example.todolist.data.local.TodoEntity
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,7 +23,8 @@ import java.util.*
 fun DetailScreen(
     todoId: Int,
     viewModel: TodoViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEdit: (Int) -> Unit
 ) {
     // 1. 定义一个状态来存放查到的待办事项
     var todo by remember { mutableStateOf<TodoEntity?>(null) }
@@ -41,6 +42,11 @@ fun DetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onEdit(todoId) }) {
+                        Icon(Icons.Default.Edit, contentDescription = "编辑")
                     }
                 }
             )
@@ -82,7 +88,7 @@ fun DetailScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.Gray)
                     Spacer(Modifier.width(8.dp))
-                    val dateStr = SimpleDateFormat("yyyy年MM月dd日", Locale.getDefault()).format(Date(item.dueDate))
+                    val dateStr = SimpleDateFormat("yyyy年MM月dd日 HH:mm", Locale.getDefault()).format(Date(item.dueDate))
                     Text(text = "截止日期: $dateStr", style = MaterialTheme.typography.bodyMedium)
                 }
 
