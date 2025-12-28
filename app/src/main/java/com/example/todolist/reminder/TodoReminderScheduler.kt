@@ -1,43 +1,55 @@
 package com.example.todolist.reminder
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
-import java.util.concurrent.TimeUnit
+import android.content.Intent
+import android.os.Build
 import kotlin.math.max
 
 class TodoReminderScheduler(context: Context) {
 
     private val appContext = context.applicationContext
-    private val workManager = WorkManager.getInstance(appContext)
+    private val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     fun schedule(todoId: Int, reminderAtMillis: Long, repeatIntervalDays: Int) {
-        val delayMillis = max(reminderAtMillis - System.currentTimeMillis(), 0L)
-        val workRequest = OneTimeWorkRequestBuilder<TodoReminderWorker>()
-            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
-            .setInputData(
-                workDataOf(
-                    TodoReminderWorker.KEY_TODO_ID to todoId,
-                    TodoReminderWorker.KEY_REPEAT_INTERVAL_DAYS to repeatIntervalDays
-                )
-            )
-            .addTag(workTag(todoId))
-            .build()
+        val triggerAtMillis = max(reminderAtMillis, System.currentTimeMillis() + MIN_DELAY_MS)
+        val pendingIntent = buildPendingIntent(todoId)
 
-        workManager.enqueueUniqueWork(
-            uniqueWorkName(todoId),
-            ExistingWorkPolicy.REPLACE,
-            workRequest
-        )
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager?.canScheduleExactAlarms() == false) {
+                    alarmManager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerAtMillis,
+                        pendingIntent
+                    )
+                } else {
+                    alarmManager?.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerAtMillis,
+                        pendingIntent
+                    )
+                }
+            }
+
+            else -> alarmManager?.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+        }
     }
 
     fun cancel(todoId: Int) {
-        workManager.cancelUniqueWork(uniqueWorkName(todoId))
+        alarmManager?.cancel(buildPendingIntent(todoId))
     }
 
-    private fun uniqueWorkName(todoId: Int) = "todo_reminder_$todoId"
+    private fun buildPendingIntent(todoId: Int): PendingIntent {
+        val intent = Intent(appContext, ReminderAlarmReceiver::class.java).apply {
+            putExtra(ReminderAlarmReceiver.EXTRA_TODO_ID, todoId)
+        }
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        return PendingIntent.getBroadcast(appContext, todoId, intent, flags)
+    }
 
-    private fun workTag(todoId: Int) = "todo_reminder_tag_$todoId"
+    companion object {
+        private const val MIN_DELAY_MS = 1_000L
+    }
 }
