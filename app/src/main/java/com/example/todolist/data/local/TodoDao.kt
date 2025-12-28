@@ -23,4 +23,8 @@ interface TodoDao {
     // 删除单个任务
     @Delete
     suspend fun deleteTodo(todo: TodoEntity)
+
+    // 获取已启用提醒且未完成的任务（用于设备重启后恢复提醒）
+    @Query("SELECT * FROM todo_table WHERE reminderEnabled = 1 AND isCompleted = 0")
+    suspend fun getActiveReminderTodos(): List<TodoEntity>
 }
