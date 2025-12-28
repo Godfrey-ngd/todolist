@@ -92,6 +92,28 @@ fun DetailScreen(
                     Text(text = "截止日期: $dateStr", style = MaterialTheme.typography.bodyMedium)
                 }
 
+                if(item.reminderEnabled){
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.Gray)
+                        Spacer(Modifier.width(8.dp))
+                        val reminderStr = SimpleDateFormat("yyyy年MM月dd日 HH:mm", Locale.getDefault()).format(Date(item.reminderAt))
+                        Text(text = "提醒时间: $reminderStr", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+
+                if(item.reminderEnabled){
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.Gray)
+                        Spacer(Modifier.width(8.dp))
+                        val intervalText = when(item.repeatIntervalDays){
+                            1 -> "每天"
+                            7 -> "每周"
+                            else -> "每${item.repeatIntervalDays}天"
+                        }
+                        Text(text = "重复提醒: $intervalText", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 // 详细描述
